@@ -1,0 +1,133 @@
+:root {
+  --card-bg: #ffffff;
+  --card-hover: #f5f5f5;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --accent: #ff6b6b;
+  --accent-light: rgba(255, 107, 107, 0.1);
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --card-bg: #2d2d2d;
+  --card-hover: #363636;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --accent: #ff8e8e;
+  --accent-light: rgba(255, 142, 142, 0.1);
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+.preference-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.preference-title {
+  font-size: 2rem;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.preference-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.preference-card {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.preference-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  transition: all 0.2s ease;
+}
+
+.option-item:hover {
+  background: var(--card-hover);
+}
+
+.option-item.selected {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.option-item input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.option-text {
+  margin-left: 0.5rem;
+}
+
+.submit-button {
+  display: block;
+  margin: 2rem auto 0;
+  padding: 1rem 2rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.submit-button:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.submit-button.disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.submit-button:active:not(.disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 1024px) {
+  .preference-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .preference-grid {
+    grid-template-columns: 1fr;
+  }
+}
