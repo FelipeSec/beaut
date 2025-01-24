@@ -18,7 +18,7 @@ const PreferenceSelection: React.FC<PreferenceSelectionProps> = ({ preferences, 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <h2 className="preference-title">Select Your Preferences</h2>
+      <h2 className="preference-title">Selecione suas Preferências</h2>
       <div className="preference-grid">
         {Object.entries(preferences).map(([category, options], index) => (
           <motion.div
@@ -63,7 +63,7 @@ const PreferenceSelection: React.FC<PreferenceSelectionProps> = ({ preferences, 
         onClick={() => isComplete && onSubmit(selected)}
         disabled={!isComplete}
       >
-        {isComplete ? 'Continue' : 'Please select all preferences'}
+        {isComplete ? 'Continuar' : 'Por favor, selecione todas as preferências'}
       </motion.button>
     </motion.div>
   );

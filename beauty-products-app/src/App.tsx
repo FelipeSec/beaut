@@ -16,31 +16,31 @@ const IMAGE_DIMENSIONS = {
 const categories = [
   {
     id: 1,
-    name: "Hair",
+    name: "Cabelo",
     image: `https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=${IMAGE_DIMENSIONS.width}&h=${IMAGE_DIMENSIONS.height}&fit=crop`,
     preferences: {
-      "Hair Type": ["Straight", "Curly", "Wavy", "Coily"],
-      "Hair Texture": ["Fine", "Medium", "Thick"],
-      "Hair Length": ["Short", "Medium", "Long"],
-      "Scalp Type": ["Oily", "Dry", "Normal"],
-      "Hair Concerns": ["Dandruff", "Frizz", "Hair Loss", "Split Ends"],
-      "Desired Hair Products": ["Shampoo", "Conditioner", "Styling Gel", "Hair Masks"],
-      "Hair Color": ["Natural", "Dyed", "Highlights"]
+      "Tipo de Cabelo": ["Liso", "Cacheado", "Ondulado", "Crespo"],
+      "Textura do Cabelo": ["Fino", "Médio", "Grosso"],
+      "Comprimento do Cabelo": ["Curto", "Médio", "Longo"],
+      "Tipo de Couro Cabeludo": ["Oleoso", "Seco", "Normal"],
+      "Problemas Capilares": ["Caspa", "Frizz", "Queda", "Pontas Duplas"],
+      "Produtos Desejados": ["Shampoo", "Condicionador", "Gel", "Máscaras"],
+      "Cor do Cabelo": ["Natural", "Tingido", "Mechas"]
     }
   },
   {
     id: 2,
-    name: "Makeup",
+    name: "Maquiagem",
     image: `https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=${IMAGE_DIMENSIONS.width}&h=${IMAGE_DIMENSIONS.height}&fit=crop`,
     preferences: {
-      "Skin Tone": ["Fair", "Medium", "Dark"],
-      "Foundation Type": ["Liquid", "Powder", "Cream", "Stick"],
-      "Concealer Preferences": ["Full Coverage", "Light Coverage"],
-      "Eye Makeup": ["Mascara", "Eyeliner", "Eyeshadow"],
-      "Lip Makeup": ["Lipstick", "Lip Gloss", "Lip Liner"],
-      "Makeup Concerns": ["Long-lasting", "Matte", "Dewy", "Sensitive Skin"],
-      "Desired Finish": ["Matte", "Dewy", "Natural"],
-      "Allergies or Sensitivities": ["Fragrance-free", "Cruelty-free"]
+      "Tom de Pele": ["Clara", "Média", "Escura"],
+      "Tipo de Base": ["Líquida", "Pó", "Cremosa", "Bastão"],
+      "Preferências de Corretivo": ["Cobertura Total", "Cobertura Leve"],
+      "Maquiagem para Olhos": ["Máscara", "Delineador", "Sombra"],
+      "Maquiagem para Lábios": ["Batom", "Gloss", "Lápis"],
+      "Preocupações com Maquiagem": ["Longa Duração", "Matte", "Luminosa", "Pele Sensível"],
+      "Acabamento Desejado": ["Matte", "Luminoso", "Natural"],
+      "Alergias ou Sensibilidades": ["Sem Fragrância", "Cruelty-free"]
     }
   },
   {
@@ -48,13 +48,13 @@ const categories = [
     name: "Skincare",
     image: `https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=${IMAGE_DIMENSIONS.width}&h=${IMAGE_DIMENSIONS.height}&fit=crop`,
     preferences: {
-      "Skin Type": ["Oily", "Dry", "Combination", "Sensitive"],
-      "Skincare Concerns": ["Acne", "Aging", "Pigmentation", "Dryness", "Redness"],
-      "Skincare Routine": ["Cleanser", "Toner", "Serum", "Moisturizer", "Sunscreen"],
-      "Ingredient Preferences": ["Hyaluronic Acid", "Retinol", "Vitamin C", "CBD"],
-      "Desired Results": ["Hydration", "Anti-aging", "Brightening", "Acne Control"],
-      "Sunscreen Protection": ["SPF 30", "SPF 50+"],
-      "Natural or Organic": ["Paraben-free", "Sulfate-free", "Vegan"]
+      "Tipo de Pele": ["Oleosa", "Seca", "Mista", "Sensível"],
+      "Preocupações com a Pele": ["Acne", "Envelhecimento", "Manchas", "Ressecamento", "Vermelhidão"],
+      "Rotina de Skincare": ["Limpador", "Tônico", "Sérum", "Hidratante", "Protetor Solar"],
+      "Preferências de Ingredientes": ["Ácido Hialurônico", "Retinol", "Vitamina C", "CBD"],
+      "Resultados Desejados": ["Hidratação", "Anti-idade", "Clareamento", "Controle de Acne"],
+      "Proteção Solar": ["FPS 30", "FPS 50+"],
+      "Natural ou Orgânico": ["Sem Parabenos", "Sem Sulfatos", "Vegano"]
     }
   }
 ];
@@ -67,9 +67,7 @@ const App = () => {
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [cheapestPrices, setCheapestPrices] = useState<any[]>([]);
   const [loadingPrices, setLoadingPrices] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const currentCategory = categories.find(cat => cat.name === selectedCategory);
 
@@ -98,10 +96,21 @@ const App = () => {
   };
 
   const handlePreferenceSubmit = async (selectedPreferences: { [key: string]: string }) => {
-    setPreferences(selectedPreferences);
-    const products = await fetchRecommendations(selectedPreferences);
-    setRecommendations(products);
-    setShowRecommendations(true);
+    try {
+      setPreferences(selectedPreferences);
+      const response = await fetch('http://localhost:5000/api/recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ preferences: selectedPreferences }),
+      });
+      const data = await response.json();
+      setRecommendations(data.recomendacoes || []);
+      setShowRecommendations(true);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+    }
   };
 
   const renderSelectedProduct = () => {
@@ -119,7 +128,7 @@ const App = () => {
             className="back-button"
             onClick={() => setSelectedProduct(null)}
           >
-            ← Back to Recommendations
+            ← Volte para as recomendações
           </button>
         </div>
 
@@ -138,7 +147,7 @@ const App = () => {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity }}
               >
-                Loading prices...
+                Carregando preços...
               </motion.div>
             ) : (
               <ul className="prices-list">
@@ -158,7 +167,7 @@ const App = () => {
                       rel="noopener noreferrer"
                       className="view-button"
                     >
-                      View Offer
+                      Ver oferta
                     </a>
                   </motion.li>
                 ))}
@@ -190,7 +199,7 @@ const App = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <h1>Select a Category</h1>
+            <h1>Selecione uma Categoria</h1>
             <div className="categories-container">
               {categories.map(category => (
                 <CategoryCard

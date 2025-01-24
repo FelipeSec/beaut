@@ -1,51 +1,38 @@
-const express = require("express");
-const axios = require("axios");
-const cheerio = require("cheerio");
-const cors = require("cors");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const aiService = require('./services/aiService');
+const scrapingService = require('./services/scrapingService');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// Example route to scrape prices
-app.get("/scrape-prices", async (req, res) => {
-  const { productName } = req.query;
-
-  if (!productName) {
-    return res.status(400).json({ error: "Product name is required" });
-  }
-
+app.post('/api/recommendations', async (req, res) => {
   try {
-    // URL of a website to scrape (example: Amazon, eBay, etc.)
-    const searchUrl = `https://www.example.com/search?q=${encodeURIComponent(productName)}`;
-
-    // Fetch the HTML from the site
-    const { data: html } = await axios.get(searchUrl);
-
-    // Load the HTML into Cheerio
-    const $ = cheerio.load(html);
-
-    // Extract product prices (this logic will depend on the site's structure)
-    const prices = [];
-    $(".product-item").each((_, element) => {
-      const name = $(element).find(".product-name").text().trim();
-      const price = $(element).find(".product-price").text().trim();
-      const link = $(element).find(".product-link").attr("href");
-
-      if (name && price) {
-        prices.push({ name, price, link: `https://www.example.com${link}` });
-      }
-    });
-
-    res.json({ prices });
+    const { preferences } = req.body;
+    const recommendations = await aiService.getRecommendations(preferences);
+    res.json(recommendations);
   } catch (error) {
-    console.error("Error scraping prices:", error);
+    res.status(500).json({ error: "Failed to get recommendations" });
+  }
+});
+
+app.get('/api/prices/:productName', async (req, res) => {
+  try {
+    const prices = await scrapingService.getPrices(req.params.productName);
+    res.json(prices);
+  } catch (error) {
     res.status(500).json({ error: "Failed to scrape prices" });
   }
 });
 
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Server is running' });
+});
+
 app.listen(PORT, () => {
-  console.log(`Backend server running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
