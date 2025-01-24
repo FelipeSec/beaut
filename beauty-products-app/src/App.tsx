@@ -64,6 +64,9 @@ const App = () => {
   const [preferences, setPreferences] = useState<{ [key: string]: string }>({});
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [cheapestPrices, setCheapestPrices] = useState<any[]>([]);
+  const [loadingPrices, setLoadingPrices] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
@@ -74,11 +77,97 @@ const App = () => {
     document.documentElement.classList.toggle('dark-theme', isDarkMode);
   }, [isDarkMode]);
 
+  const scrapePrices = async (productName: string) => {
+    setLoadingPrices(true);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/scrape-prices?productName=${encodeURIComponent(productName)}`
+      );
+      const data = await response.json();
+      setCheapestPrices(data.prices || []);
+    } catch (error) {
+      console.error("Error scraping prices:", error);
+    } finally {
+      setLoadingPrices(false);
+    }
+  };
+
+  const handleProductSelect = (product: any) => {
+    setSelectedProduct(product);
+    scrapePrices(product.name);
+  };
+
   const handlePreferenceSubmit = async (selectedPreferences: { [key: string]: string }) => {
     setPreferences(selectedPreferences);
     const products = await fetchRecommendations(selectedPreferences);
     setRecommendations(products);
     setShowRecommendations(true);
+  };
+
+  const renderSelectedProduct = () => {
+    if (!selectedProduct) return null;
+
+    return (
+      <motion.div 
+        className="product-details"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="product-header">
+          <h2>{selectedProduct.name}</h2>
+          <button 
+            className="back-button"
+            onClick={() => setSelectedProduct(null)}
+          >
+            ← Back to Recommendations
+          </button>
+        </div>
+
+        <div className="product-content">
+          <div className="product-info">
+            <img src={selectedProduct.image} alt={selectedProduct.name} />
+            <p className="description">{selectedProduct.description}</p>
+            <p className="price">${selectedProduct.price}</p>
+          </div>
+
+          <div className="price-comparison">
+            <h3>Price Comparison</h3>
+            {loadingPrices ? (
+              <motion.div 
+                className="loading-spinner"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity }}
+              >
+                Loading prices...
+              </motion.div>
+            ) : (
+              <ul className="prices-list">
+                {cheapestPrices.map((price, index) => (
+                  <motion.li 
+                    key={index}
+                    className="price-item"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <span className="store-name">{price.name}</span>
+                    <span className="price-amount">${price.price}</span>
+                    <a 
+                      href={price.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="view-button"
+                    >
+                      View Offer
+                    </a>
+                  </motion.li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
   };
 
   return (
@@ -117,11 +206,12 @@ const App = () => {
             preferences={currentCategory?.preferences || {}}
             onSubmit={handlePreferenceSubmit}
           />
+        ) : selectedProduct ? (
+          renderSelectedProduct()
         ) : (
           <ProductRecommendations
             products={recommendations}
-            preferences={preferences}
-            category={selectedCategory}
+            onSelect={handleProductSelect}
           />
         )}
       </main>
