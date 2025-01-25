@@ -8,15 +8,9 @@ class AIService {
 
   async getRecommendations(preferences) {
     try {
-      // Ensure preferences are valid
-      if (!preferences || Object.keys(preferences).length === 0) {
-        throw new Error("Invalid preferences: Preferences object is empty or undefined");
-      }
-
-      // Generate the prompt
       const prompt = `Como especialista em produtos de beleza, recomende produtos com base nas preferências:
       ${JSON.stringify(preferences, null, 2)}
-
+      
       Responda APENAS com um objeto JSON seguindo exatamente este formato:
       {
         "recommendations": [
@@ -31,21 +25,18 @@ class AIService {
         ]
       }`;
 
-      // Generate content from the AI model
       const result = await this.model.generateContent(prompt);
       const responseText = result.response.text();
-
-      // Clean and parse the JSON response
+      
       try {
         const cleanedResponse = responseText.replace(/```json|```/g, '').trim();
         const parsedResponse = JSON.parse(cleanedResponse);
-
-        // Validate the response structure
+        
         if (!parsedResponse.recommendations || !Array.isArray(parsedResponse.recommendations)) {
-          throw new Error("Invalid response structure: 'recommendations' is missing or not an array");
+          throw new Error('Invalid response structure');
         }
 
-        // Validate and map each recommendation
+        // Validate each recommendation
         const validatedRecommendations = parsedResponse.recommendations.map((rec, index) => ({
           id: rec.id || index + 1,
           nome: rec.nome || '',
@@ -57,11 +48,11 @@ class AIService {
 
         return { recommendations: validatedRecommendations };
       } catch (parseError) {
-        console.error("Error parsing AI response:", parseError);
+        console.error('Parse error:', parseError);
         return { recommendations: [] };
       }
     } catch (error) {
-      console.error("AI Service error:", error.message || error);
+      console.error('AI Service error:', error);
       return { recommendations: [] };
     }
   }
